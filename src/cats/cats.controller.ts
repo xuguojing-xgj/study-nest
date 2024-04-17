@@ -54,4 +54,13 @@ export class CatsController {
     create(): string {
         return 'this action adds a new cat'
     }
+
+    // 路由通配符
+
+    @Get('ab*cd') // 开头为 ab 结尾为 cd 等
+    // 字符 ? + * 和 () 都可用于路由路径, 并且是其正则表达式对应项的子集
+    // 连字符 (-) 和点 (.) 通过基于字符串的路径从字面上解释
+    router(): string {
+        return ''
+    }
 }
