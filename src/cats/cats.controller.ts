@@ -1,12 +1,57 @@
 // @@filename(cats.controller)
 // 通常用来表示下面的代码块应该放在cats.controller这个文件中。
 // 并不是特殊语法或者关键字
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Res, Post } from '@nestjs/common';
+// 处理程序通常需要访问客户端请求的详细信息, Nest 提供对底层平台请求对象的访问 (默认为 Express )
+import { Request } from 'express';
 
-@Controller('cats')
+// Controller 控制器(负责传入请求并返回给客户端)
+@Controller('cats') // 指定路径前缀 cats 
 export class CatsController {
+    // @Get() : http 请求方法装饰器 告诉 Nest 为 HTTP 请求的特定终点创建处理程序
+    // 终结点对应于 HTTP 请求方法和理由路径
+    // 例如 :
+    // 控制器指定前缀(可选)为 cats 因此 Nest 会将请求映射到 GET /cats 到此处理程序
+    // 路由路径包括: 可选的控制器路径前缀 和 请求方法装饰器中声明的任何路径字符串
+    // 例如 : 
+    // 路径前缀与装饰器 cats @Get('breed) 组合将为 GET /cats/breed
     @Get()
-    findAll(): string {
-        return '';
+    // Nest 两种操作响应
+    // 1. Standard(recommended) 标准(推荐)
+    // 当请求程序返回 JavaScript 对象或者数组时, 它将自动序列化为 JSON 。但是当返回 JS 原始类型时(例如: string number boolean),Nest将只发送该值,而不会尝试序列化它
+    // 默认情况下,响应状态码始终为 200 , 但使用 201 的 POST 请求除外, 我们可以通过在处理程序级别添加 @HttpCode(...) 装饰器来轻松更改此行为
+    // 2. Library-specific 特定于库
+    // 使用特定于库(例如: Express) 响应对象, 该对象可以使用方法处理程序签名中的 @Res() 装饰器注入 (例如: findAll(@Res() response) ) 处理本机响应方法
+    // 使用 Express 可以使用 response.status(200).send() 代码构造响应
+    findAll(@Res() request: Request): string {
+        // 装饰器 
+        // @Response(), @Res()  res
+        // @Nest()  nest
+        // @Session()   req.session
+        // @Param(Key?: string) req.params / req.parmas[key]
+        // @Body(Key?: string) req.body / req.body[key]
+        // @Query(Key?: string) req.query / req.query[key]
+        // @Headers(name?: string) req.headers / req.headers[name]
+        // @Ip() req.ip
+        // @HostParam() req.hosts
+
+        // 为了与底层 HTTP 平台 (例如 Express 和 Fastify) 的类型兼容
+        // Nest 提供了 @Res() 装饰 @Response() 器
+        // 在方法处理程序 @Res or @Response 时 Nest 置于该处理程序的特定库模式 必须调用 response 对象
+        // 例如:
+        // res.json(...) 或者 res.send(...)
+        // @Request(), @Req()   req 来发响应, 否则 HTTP 服务器将挂起
+        console.log(request)
+        return 'this action returns all cats';
+    }
+
+    // 创建新纪录的终结点
+    // Nest 为所有标准 HTTP 方法提供了修饰器
+    // 例如 :
+    // @Get() @Post() @Put() @Delete() @Patch() @Options() 和 @Head()
+    // 此外 @All() 还定义了一个处理所有问题的终结点
+    @Post()
+    create(): string {
+        return 'this action adds a new cat'
     }
 }
