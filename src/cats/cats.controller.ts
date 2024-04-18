@@ -1,10 +1,11 @@
 // @@filename(cats.controller)
 // 通常用来表示下面的代码块应该放在cats.controller这个文件中。
 // 并不是特殊语法或者关键字
-import { Controller, Get, Res, Post } from '@nestjs/common';
+import { Controller, Get, Res, Post, HttpCode, Header, Redirect, Query, Param } from '@nestjs/common';
 // 处理程序通常需要访问客户端请求的详细信息, Nest 提供对底层平台请求对象的访问 (默认为 Express )
 import { Request } from 'express';
 
+// 创建控制器 nest g controller [name] 
 // Controller 控制器(负责传入请求并返回给客户端)
 @Controller('cats') // 指定路径前缀 cats 
 export class CatsController {
@@ -20,8 +21,8 @@ export class CatsController {
     // 1. Standard(recommended) 标准(推荐)
     // 当请求程序返回 JavaScript 对象或者数组时, 它将自动序列化为 JSON 。但是当返回 JS 原始类型时(例如: string number boolean),Nest将只发送该值,而不会尝试序列化它
     // 默认情况下,响应状态码始终为 200 , 但使用 201 的 POST 请求除外, 我们可以通过在处理程序级别添加 @HttpCode(...) 装饰器来轻松更改此行为
-    // 2. Library-specific 特定于库
-    // 使用特定于库(例如: Express) 响应对象, 该对象可以使用方法处理程序签名中的 @Res() 装饰器注入 (例如: findAll(@Res() response) ) 处理本机响应方法
+    // 2. Library-specific 库
+    // 使用 库 特定的 (例如: Express) 响应对象, 该对象可以使用方法处理程序签名中的 @Res() 装饰器注入 (例如: findAll(@Res() response) ) 处理本机响应方法
     // 使用 Express 可以使用 response.status(200).send() 代码构造响应
     findAll(@Res() request: Request): string {
         // 装饰器 
@@ -62,5 +63,58 @@ export class CatsController {
     // 连字符 (-) 和点 (.) 通过基于字符串的路径从字面上解释
     router(): string {
         return ''
+    }
+
+    // 状态码
+    // 默认情况下响应状态码始终为 200 但是 POST 请求 201 除外
+    // 我们可以通过处理程序级别添加 @HttpCode(...) 装饰器来轻松更改此行为
+    @Post()
+    // 通常情况下 状态代码不是静态的, 而是取决于各种因素,
+    // 在这种情况下可以使用 库 特定的响应 (inject using @Res() ) 对象 (或者, 如果发生错误, 则抛出异常)
+    @HttpCode(204)
+    request() {
+        return ''
+    }
+
+    // 自定义请求头 @Header() 装饰器 or 库特定的响应对象 ( 并直接调用 res.header() )
+    @Post()
+    @Header('Cache-Control', 'none')
+    header() {
+        return ''
+    }
+
+    // 重定向
+    // @Redirect() 装饰器 or 库特定的响应对象 ( 并直接调用 res.redirect() )
+    // @Redirect() 接受两个参数, url 并且 statusCode 都是可选地, 如果省略, 则默认 statusCode 值为 302 (Found)
+
+    @Get()
+    @Redirect('https://nestjs.com', 301)
+    redirect(@Query('version') version) {
+        console.log(version)
+        if (version && version === '5') {
+            return { url: 'https://doca.nestjs.com/v5/' }
+        }
+    }
+
+    // 动态路由参数
+
+    @Get(':id')
+    // @Parma 修改方法参数
+    findOne(@Param() params: any) {
+        console.log(params.id)
+        return `this action returns a #${params.id} cat`
+    }
+    // 引用访问 id 参数 params.id
+    @Get(':id')
+    findTwo(@Param('id') id: string): string {
+        return `this action returns a #${id} cat`
+    }
+}
+
+@Controller({ host: 'admin.example.com' })
+export class AdminController {
+    @Get()
+    index(): string {
+        return 'Admin page'
     }
 }
